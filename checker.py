@@ -36,6 +36,7 @@ def checkItem():
     
     old_price = price
 
+print("All working.")
 while(True):
     checkItem()
     time.sleep(86400)
