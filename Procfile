@@ -1,0 +1,1 @@
+worker: checker.py
