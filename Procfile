@@ -1,1 +1,1 @@
-worker: checker.py
+worker: python checker.py
