@@ -7,7 +7,7 @@ def sendMail():
     try:
         email = os.getenv("EMAIL_LOGIN")
         password = os.getenv("EMAIL_PASSWORD")
-    else:
+    except:
         print("Loading email essentials FAILED!")
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.ehlo()
