@@ -1,19 +1,24 @@
-import requests, smtplib, time
+import requests, smtplib, time, os
+from dotenv import load_dotenv
 from bs4 import BeautifulSoup
+load_dotenv()
 
 def sendMail():
-    mail = 'pepcio3320@gmail.com'
-    passw = 'wjxmmjvunxmkihgc'
+    try:
+        email = os.getenv("EMAIL_LOGIN")
+        password = os.getenv("EMAIL_PASSWORD")
+    else:
+        print("Loading email essentials FAILED!")
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.ehlo()
     server.starttls()
     server.ehlo()
 
-    server.login('pepcio3320@gmail.com', passw)
+    server.login(email, password)
     subject = "Price update on an item you want to check."
-    body = "The price on " + nameOfProduct + " fell down. Check it on " + url + "\n\nPowered by literally a fucking genius. Penis."
+    body = "The price on " + nameOfProduct + " fell down. Check it on " + url + "\n\nPenis."
     msg = f"Subject: {subject}\n\n{body}"
-    server.sendmail(mail,mail,msg)
+    server.sendmail(email, email, msg)
     print("Price has changed. Email has been sent.")
     server.quit()
 
@@ -31,12 +36,20 @@ def checkItem():
     nameOfProduct = soup.find('h1',{'class':'prod-name'}).get_text()
     price = float(soup.find("div",{'class':"price-new"}).get_text().strip(' zł'))
 
+
+    print("Item currently being checked: " + nameOfProduct)
+    print("Checking...")
+    print("Old price: " + str(old_price))
+    print("New price: " + str(price))
+    
     if(price < old_price):
         sendMail()
+    else:
+        print("Price has not changed. Trying again in 24 hours.")
     
     old_price = price
 
-print("All working.")
+print("Init succ")
 while(True):
     checkItem()
     time.sleep(86400)
