@@ -45,12 +45,13 @@ def checkItem(item_url, i):
         sendMail()
         print("Email sent!\n")
     else:
-        print("Price has not changed. Trying again in 24 hours.\n")
+        print("Price has not changed. Trying again in 12 hours.\n")
 
 
 #       --main--        #
 print("Starting up.")
 
+INTERVAL = 3600 * 12
 itemList = open("item_list.txt", 'r').read().split("\n")
 prizes = []
 for i in range(len(itemList)):
@@ -60,4 +61,4 @@ while(True):
     for i in range(len(itemList)):
         item = itemList[i]
         checkItem(item, i)
-    time.sleep(10)
+    time.sleep(INTERVAL)
