@@ -22,19 +22,18 @@ def sendMail():
     print("Price has changed. Email has been sent.")
     server.quit()
 
-def checkItem(item_url):
+def checkItem(item_url, i):
     global url
     global nameOfProduct
     headers = {"User_agent":'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36'}
-    old_price = 0
     url = item_url
-    
     page = requests.get(url, headers=headers)
     soup = BeautifulSoup(page.content,'html.parser')
+    old_price = prizes[i]
 
     nameOfProduct = soup.find('h1',{'class':'prod-name'}).get_text()
     price = float(soup.find("div",{'class':"price-new"}).get_text().strip(' zł').replace(" ", ""))
-
+    prizes[i] = price
 
     print("Item currently being checked: " + nameOfProduct)
     print("Checking...")
@@ -47,14 +46,18 @@ def checkItem(item_url):
         print("Email sent!\n")
     else:
         print("Price has not changed. Trying again in 24 hours.\n")
-    
-    old_price = price
 
 
-
+#       --main--        #
 print("Starting up.")
+
 itemList = open("item_list.txt", 'r').read().split("\n")
+prizes = []
+for i in range(len(itemList)):
+    prizes.insert(i, 0)
+
 while(True):
-    for item in itemList:
-        checkItem(item)
-    time.sleep(86400)
+    for i in range(len(itemList)):
+        item = itemList[i]
+        checkItem(item, i)
+    time.sleep(10)
