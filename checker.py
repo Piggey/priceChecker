@@ -1,7 +1,9 @@
 import requests, smtplib, time, os
 from dotenv import load_dotenv
 from bs4 import BeautifulSoup
+from apscheduler.schedulers.blocking import BlockingScheduler
 load_dotenv()
+sched = BlockingScheduler()
 
 def sendMail():
     try:
@@ -16,24 +18,23 @@ def sendMail():
 
     server.login(email, password)
     subject = "Price update on an item you want to check."
-    body = "The price on " + nameOfProduct + " fell down. Check it on " + url + "\n\nPenis."
+    body = "The price on " + nameOfProduct + " has changed. Check it on " + url + "\n\nPenis."
     msg = f"Subject: {subject}\n\n{body}"
     server.sendmail(email, email, msg)
     print("Price has changed. Email has been sent.")
     server.quit()
 
-def checkItem(item_url, i):
+def checkItem(item_url):
+    headers = {"User_agent":'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36'}
     global url
     global nameOfProduct
-    headers = {"User_agent":'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36'}
     url = item_url
     page = requests.get(url, headers=headers)
-    soup = BeautifulSoup(page.content,'html.parser')
-    old_price = prizes[i]
+    soup = BeautifulSoup(page.content, 'html.parser')
+    old_price = Items[url]
 
-    nameOfProduct = soup.find('h1',{'class':'prod-name'}).get_text()
-    price = float(soup.find("div",{'class':"price-new"}).get_text().strip(' zł').replace(" ", ""))
-    prizes[i] = price
+    nameOfProduct = soup.find('h1', {'class':'prod-name'}).get_text()
+    price = float(soup.find("div", {'class':"price-new"}).get_text().strip(' zł').replace(" ", ""))
 
     print("Item currently being checked: " + nameOfProduct)
     print("Checking...")
@@ -47,18 +48,19 @@ def checkItem(item_url, i):
     else:
         print("Price has not changed. Trying again in 12 hours.\n")
 
+    Items[url] = price
 
-#       --main--        #
-print("Starting up.")
+itemList = open("item_list.txt", 'r')
+Items = {}
+for line in itemList:
+    x = line.split(";")
+    a = x[0]
+    b = float(x[1].strip("\n"))
+    Items[a] = b
 
-INTERVAL = 3600 * 12
-itemList = open("item_list.txt", 'r').read().split("\n")
-prizes = []
-for i in range(len(itemList)):
-    prizes.insert(i, 0)
+@sched.scheduled_job('interval', hours=24)
+def scheduled_job():
+    for url in Items:
+        checkItem(url)
 
-while(True):
-    for i in range(len(itemList)):
-        item = itemList[i]
-        checkItem(item, i)
-    time.sleep(INTERVAL)
+sched.start()
