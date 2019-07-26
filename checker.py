@@ -50,6 +50,7 @@ def checkItem(item_url):
 
     Items[url] = price
 
+print("starting.")
 itemList = open("item_list.txt", 'r')
 Items = {}
 for line in itemList:
@@ -57,6 +58,7 @@ for line in itemList:
     a = x[0]
     b = float(x[1].strip("\n"))
     Items[a] = b
+print(Items)
 
 @sched.scheduled_job('interval', hours=24)
 def scheduled_job():
